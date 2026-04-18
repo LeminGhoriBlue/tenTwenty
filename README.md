@@ -4,6 +4,8 @@ Weekly timesheet UI: sign in, list weeks with filters and pagination, open a wee
 
 **Dashboard actions:** Each row links to `/dashboard/[weekId]`. The label reflects week status — **Create** (Missing), **Update** (Incomplete), **View** (Completed). On the detail page, **Completed** weeks are **read-only** (no add/edit/delete); **Missing** and **Incomplete** weeks support the entry modal for create and update.
 
+**Live site (Vercel):** [Dashboard](https://ten-twenty-j092qs617-leminghoriblues-projects.vercel.app/dashboard) — the app root redirects to `/dashboard`, so you can also use the [project home](https://ten-twenty-j092qs617-leminghoriblues-projects.vercel.app/).
+
 ---
 
 ## Setup instructions
