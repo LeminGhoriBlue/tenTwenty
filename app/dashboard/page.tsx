@@ -109,6 +109,7 @@ export default function TimesheetsOverviewPage() {
         >
           <option value="">Status</option>
           <option value="Completed">Completed</option>
+          <option value="Overtime">Overtime</option>
           <option value="Incomplete">Incomplete</option>
           <option value="Missing">Missing</option>
         </select>

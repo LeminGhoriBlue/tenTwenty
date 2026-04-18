@@ -7,7 +7,6 @@ import { useTimesheets } from "@/hooks/useTimesheets"
 import { formatWeekDateRange } from "@/lib/utils"
 import { MoreHorizontal, Plus } from "lucide-react"
 import type { TimesheetEntry, Week } from "@/lib/types"
-import http from "@/lib/http"
 
 const TimesheetEntryModal = dynamic(
   () => import("@/components/timesheets/TimesheetEntryModal"),
@@ -41,7 +40,6 @@ export default function WeeklyTimesheetPage({
     createEntry,
     updateEntry,
     deleteEntry,
-    updateWeek,
   } = useTimesheets()
 
   const [selectedEntry, setSelectedEntry] = useState<TimesheetEntry | null>(null)
@@ -62,6 +60,10 @@ export default function WeeklyTimesheetPage({
   )
 
   const targetHours = 40
+  const overtimeHours = useMemo(
+    () => (totalHours > targetHours ? totalHours - targetHours : 0),
+    [totalHours, targetHours]
+  )
   const progressPercent = useMemo(
     () => Math.min((totalHours / targetHours) * 100, 100),
     [totalHours]
@@ -110,24 +112,9 @@ export default function WeeklyTimesheetPage({
         })
       }
       await fetchEntries(weekId)
-      const updatedEntries = await http.get<TimesheetEntry[]>(
-        `/timesheets/${weekId}/entries`
-      )
-      const total = updatedEntries.reduce((sum, e) => sum + Number(e.hours), 0)
-      const newStatus =
-        total === 0 ? "Missing" : total < 40 ? "Incomplete" : "Completed"
-      await updateWeek(weekId, { status: newStatus })
       setModalOpen(false)
     },
-    [
-      selectedEntry,
-      selectedDate,
-      weekId,
-      createEntry,
-      updateEntry,
-      fetchEntries,
-      updateWeek,
-    ]
+    [selectedEntry, selectedDate, weekId, createEntry, updateEntry, fetchEntries]
   )
 
   const handleDelete = useCallback(
@@ -164,8 +151,12 @@ export default function WeeklyTimesheetPage({
     )
   }
 
-  /** Completed weeks: dashboard shows "View" — detail page is read-only (no create/update/delete). */
-  const isReadOnly = week.status === "Completed"
+  /**
+   * Important UX: reaching 40 hours marks the week "Completed", but users still need to
+   * adjust entries (fix mistakes, redistribute hours, etc.). So we do NOT lock editing
+   * purely based on the computed status.
+   */
+  const isReadOnly = false
 
   return (
     <>
@@ -178,17 +169,17 @@ export default function WeeklyTimesheetPage({
             <p className="mt-1 text-sm text-gray-400">
               {formatWeekDateRange(week.startDate, week.endDate)}
             </p>
-            {isReadOnly && (
-              <p className="mt-2 text-sm text-gray-500">
-                This week is complete. You can review entries but not add or edit them.
-              </p>
-            )}
           </div>
 
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700">
               {totalHours}/{targetHours} hrs
             </span>
+            {overtimeHours > 0 && (
+              <span className="rounded bg-[#FEECDC] px-2 py-0.5 text-xs font-medium text-[#B43403]">
+                +{overtimeHours} hrs overtime
+              </span>
+            )}
             <div className="flex items-center gap-2">
               <div className="h-2 w-32 overflow-hidden rounded-full bg-gray-100">
                 <div

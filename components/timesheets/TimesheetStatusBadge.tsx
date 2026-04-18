@@ -2,6 +2,7 @@ import { memo } from "react"
 
 const statusStyles: Record<string, string> = {
   Completed: "bg-[#DEF7EC] text-[#03543F]",
+  Overtime: "bg-[#FEECDC] text-[#B43403]",
   Incomplete: "bg-[#FDF6B2] text-[#723B13]",
   Missing: "bg-[#FCE8F3] text-[#99154B]",
 }

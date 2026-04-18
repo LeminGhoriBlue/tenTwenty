@@ -22,6 +22,7 @@ export function compareWeeks(
 
 export function getWeekActionLabel(status: string): string {
   if (status === "Completed") return "View"
+  if (status === "Overtime") return "Update"
   if (status === "Incomplete") return "Update"
   return "Create"
 }

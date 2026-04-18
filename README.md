@@ -1,8 +1,8 @@
 # Ticktock
 
-Weekly timesheet UI: sign in, list weeks with filters and pagination, open a week to review or edit entries, and track progress toward 40 hours. Uses the Next.js App Router and internal `/api` routes over an in-memory mock store.
+Weekly timesheet UI: sign in, list weeks with filters and pagination, open a week to review or edit entries, and track progress toward 40 hours (including overtime). Uses the Next.js App Router and internal `/api` routes with client-side persistence in `localStorage`.
 
-**Dashboard actions:** Each row links to `/dashboard/[weekId]`. The label reflects week status — **Create** (Missing), **Update** (Incomplete), **View** (Completed). On the detail page, **Completed** weeks are **read-only** (no add/edit/delete); **Missing** and **Incomplete** weeks support the entry modal for create and update.
+**Dashboard actions:** Each row links to `/dashboard/[weekId]`. The label reflects week status — **Create** (Missing), **Update** (Incomplete/Overtime), **View** (Completed). The detail page supports add/edit/delete for all statuses in this demo.
 
 **Live site (Vercel):** [Dashboard](https://ten-twenty-j092qs617-leminghoriblues-projects.vercel.app/dashboard) — the app root redirects to `/dashboard`, so you can also use the [project home](https://ten-twenty-j092qs617-leminghoriblues-projects.vercel.app/).
 
@@ -82,11 +82,11 @@ Pure helpers used by the dashboard live in `lib/timesheetSort.ts`; entry-modal v
 
 ## Assumptions and notes
 
-- **Persistence:** Timesheets and entries live in memory (`data/store.ts`). Restarting the server resets data; a real backend would replace this.
+- **Persistence:** Timesheets and entries are persisted in browser `localStorage` (key: `ticktock.timesheets.db`) and treated as the client-side DB. On first load, when local data is missing, the app hydrates from mock API data and then writes it to local storage.
 - **Auth:** Credentials are validated against `data/mockUsers.ts`. The demo secret in `lib/auth.ts` is not suitable for production.
 - **API surface:** The client only calls Next.js route handlers under `app/api/**`; there is no direct browser access to the mock store module.
-- **Week status:** Derived from total logged hours for the week — **0** → Missing, **1–39** → Incomplete, **40+** → Completed.
-- **Completed weeks (View):** The weekly detail screen hides add/edit/delete and the entry modal so users can only read entries. Enforcement is in the UI; API routes do not separately block writes for completed weeks in this demo.
+- **Week status:** Derived from total logged hours for the week — **0** → Missing, **1–39** → Incomplete, **40** → Completed, **41+** → Overtime.
+- **Overtime:** When a week exceeds 40 hours, status becomes **Overtime** and the weekly detail header shows the extra amount as `+X hrs overtime`.
 - **Date range filter:** Preset ranges compare each week’s start/end to the selected window.
 - **Sessions:** JWT-based sessions via Auth.js; sign-in and sign-out use full-page navigation after success or logout.
 
@@ -94,7 +94,7 @@ Pure helpers used by the dashboard live in `lib/timesheetSort.ts`; entry-modal v
 
 - `/login` — sign in  
 - `/dashboard` — week list (columns: Week #, date range, status, action that routes to the week)  
-- `/dashboard/[weekId]` — entries grouped by day; add/edit/delete when the week is not Completed; otherwise view-only  
+- `/dashboard/[weekId]` — entries grouped by day with add/edit/delete and overtime indicator when total hours exceed 40  
 
 **Performance (frontend)**
 
